@@ -11,7 +11,7 @@ public class CustomMecanumDrive {
     private GyroManager gyro = new GyroManager();
 
     private double SLOW_MODE_FACTOR = 0.5;
-    private double CACHING_THRESHOLD = 0.001;
+    private double CACHING_THRESHOLD = 0.005;
 
     public static double Kp = 0.01;
     public static double Kd = 0;
@@ -100,7 +100,7 @@ public class CustomMecanumDrive {
 
     // checks if powers are different enough
     public boolean comparePower(double prevPower, double currentPower) {
-        return Math.abs(currentPower - prevPower) > CACHING_THRESHOLD;
+        return Math.abs(currentPower - prevPower) >= CACHING_THRESHOLD;
     }
 
     public double PDTurning(double targetHeading, double currentHeading) {
