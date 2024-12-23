@@ -60,6 +60,7 @@ public class CustomMecanumDrive {
         if (opmode.gamepad1.a) {targetAngle = gyro.getHeading();}
 
         opmode.telemetry.addData("current heading", gyro.getHeading());
+        opmode.telemetry.addData("absolute heading", gyro.getAbsoluteHeading());
         opmode.telemetry.addData("target heading", targetAngle);
         opmode.telemetry.addData("gyro offset", gyro.offset);
         opmode.telemetry.addData("PID calculated rx", PDTurning(gyro.getHeading(), targetAngle));

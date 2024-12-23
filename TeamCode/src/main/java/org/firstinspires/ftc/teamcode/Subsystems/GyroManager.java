@@ -13,14 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class GyroManager {
         public IMU imu;
-        // IMU orientation
-        // https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
-        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-
-        private RevHubOrientationOnRobot orientation = new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection);
 
         double globalHeading;
         double relativeHeading;
@@ -28,7 +20,16 @@ public class GyroManager {
 
         public void initialize(OpMode opmode) {
                 imu = opmode.hardwareMap.get(IMU.class, "imu");
-                imu.initialize(new IMU.Parameters(orientation));
+                // Initialize IMU directly
+                imu.initialize(
+                        new IMU.Parameters(
+                                new RevHubOrientationOnRobot(
+                                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                                )
+                        )
+                );
+
         }
 
         public double getHeading()
