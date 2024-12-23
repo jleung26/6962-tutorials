@@ -1,10 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Subsystems.ArmTutorial;
+
 @TeleOp
-public class armTestTeleOp extends OpMode {
+public class ArmTestTeleOp extends OpMode {
     private ArmTutorial intakeArm = new ArmTutorial();
 
     public void init() {
