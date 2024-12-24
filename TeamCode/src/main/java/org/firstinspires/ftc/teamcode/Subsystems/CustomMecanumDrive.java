@@ -10,8 +10,8 @@ public class CustomMecanumDrive {
     private volatile double prevFrontLeftPower, prevBackLeftPower, prevFrontRightPower, prevBackRightPower;
     private GyroManager gyro = new GyroManager();
 
-    private double SLOW_MODE_FACTOR = 0.5;
-    private double CACHING_THRESHOLD = 0.005;
+    public static double SLOW_MODE_FACTOR = 0.5;
+    public static double CACHING_THRESHOLD = 0.005;
 
     public static double Kp = 0.01;
     public static double Kd = 0;
@@ -26,6 +26,9 @@ public class CustomMecanumDrive {
 
     public void initialize(OpMode opmode) {
         this.Fl = opmode.hardwareMap.get(DcMotorEx.class, "");
+        this.Fr = opmode.hardwareMap.get(DcMotorEx.class, "");
+        this.Bl = opmode.hardwareMap.get(DcMotorEx.class, "");
+        this.Br = opmode.hardwareMap.get(DcMotorEx.class, "");
 
         Fl.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         Fr.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -124,6 +127,6 @@ public class CustomMecanumDrive {
         // Normalize error to -180 to 180
         while (error > 180) error -= 360;
         while (error < -180) error += 360;
-        return -error;
+        return error;
     }
 }
