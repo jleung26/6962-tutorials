@@ -39,7 +39,7 @@ public class DriveTestTeleop extends OpMode {
         // drive field-centric default
         // slowmode when hold right bumper
         // auto rotate to target
-        drive.operate(this);
+        drive.operateTesting(this);
 
         // loop time measuring
         telemetry.addData("Loop Times", elapsedtime.milliseconds());

@@ -41,7 +41,7 @@ public class CustomMecanumDrive {
         gyro.initialize(opmode);
     }
 
-    public void operate(OpMode opmode) {
+    public void operateTesting(OpMode opmode) {
 
         // auto rotate to angle with PID test
         if (opmode.gamepad1.right_trigger > 0.1) {
