@@ -14,6 +14,7 @@ public class CustomMecanumDrive {
 
     public static double SLOW_MODE_FACTOR = 0.5;
     public static double CACHING_THRESHOLD = 0.005;
+    public static double SCALING_EXPONENT = 1;
 
     public static double Kp = 0.01;
     public static double Kd = 0;
@@ -45,18 +46,29 @@ public class CustomMecanumDrive {
 
     public void operateTesting(OpMode opmode) {
 
+        // for testing PD auto orienting
         // auto rotate to angle with PID test
         if (opmode.gamepad1.right_trigger > 0.1) {
-            driveFieldCentric(opmode.gamepad1.left_stick_x, opmode.gamepad1.left_stick_y, PDTurning(gyro.getHeading(), targetAngle), gyro.getHeading());
+            driveRobotCentric(opmode.gamepad1.left_stick_x, opmode.gamepad1.left_stick_y, PDTurning(gyro.getHeading(), targetAngle));
         }
         // slow mode
-        else if (opmode.gamepad1.right_bumper) {
-            driveFieldCentric(opmode.gamepad1.left_stick_x * SLOW_MODE_FACTOR, -opmode.gamepad1.left_stick_y * SLOW_MODE_FACTOR, opmode.gamepad1.right_stick_x * SLOW_MODE_FACTOR, gyro.getHeading());
+        else if (opmode.gamepad1.left_trigger > 0.1) {
+            driveRobotCentric(opmode.gamepad1.left_stick_x * SLOW_MODE_FACTOR, -opmode.gamepad1.left_stick_y * SLOW_MODE_FACTOR, opmode.gamepad1.right_stick_x * SLOW_MODE_FACTOR);
         }
         // normal drive
         else {
-            driveFieldCentric(opmode.gamepad1.left_stick_x, -opmode.gamepad1.left_stick_y, opmode.gamepad1.right_stick_x, gyro.getHeading());
+            driveRobotCentric(opmode.gamepad1.left_stick_x, -opmode.gamepad1.left_stick_y, opmode.gamepad1.right_stick_x);
         }
+
+        // for testing exponential drive vector scaling, uncomment when test
+//        // apply to all 3 inputs (I'm guessing this will be our driver's favorite)
+//        driveRobotCentric(Math.pow(opmode.gamepad1.left_stick_x, SCALING_EXPONENT), -Math.pow(opmode.gamepad1.left_stick_y, SCALING_EXPONENT), Math.pow(opmode.gamepad1.right_stick_x, SCALING_EXPONENT));
+//        // apply to forward back AND turn (not strafe)
+//        driveRobotCentric(opmode.gamepad1.left_stick_x, -Math.pow(opmode.gamepad1.left_stick_y, SCALING_EXPONENT), Math.pow(opmode.gamepad1.right_stick_x, SCALING_EXPONENT));
+//        // apply to only turn
+//        driveRobotCentric(opmode.gamepad1.left_stick_x, -opmode.gamepad1.left_stick_y, Math.pow(opmode.gamepad1.right_stick_x, SCALING_EXPONENT));
+//        // apply only to forward back
+//        driveRobotCentric(opmode.gamepad1.left_stick_x, -Math.pow(opmode.gamepad1.left_stick_y, SCALING_EXPONENT), opmode.gamepad1.right_stick_x);
 
         // gyro reset
         if (opmode.gamepad1.b) {gyro.relativeReset();}
@@ -64,12 +76,13 @@ public class CustomMecanumDrive {
         // sets target
         if (opmode.gamepad1.a) {targetAngle = gyro.getHeading();}
 
-        opmode.telemetry.addData("current heading", gyro.getHeading());
-        opmode.telemetry.addData("absolute heading", gyro.getAbsoluteHeading());
-        opmode.telemetry.addData("target heading", targetAngle);
-        opmode.telemetry.addData("gyro offset", gyro.offset);
-        opmode.telemetry.addData("PID calculated rx", PDTurning(gyro.getHeading(), targetAngle));
-        opmode.telemetry.addData("normalized error", normalizeError(targetAngle - gyro.getHeading()));
+        opmode.telemetry.addData("Current Scaling Exponent: input^", SCALING_EXPONENT);
+        opmode.telemetry.addData("current heading: ", gyro.getHeading());
+        opmode.telemetry.addData("absolute heading: ", gyro.getAbsoluteHeading());
+        opmode.telemetry.addData("target heading: ", targetAngle);
+        opmode.telemetry.addData("gyro offset: ", gyro.offset);
+        opmode.telemetry.addData("PD calculated rx [-1,1]: ", PDTurning(gyro.getHeading(), targetAngle));
+        opmode.telemetry.addData("normalized error: ", normalizeError(targetAngle - gyro.getHeading()));
     }
 
     public void driveFieldCentric(double x, double y, double rx, double heading) {
@@ -90,7 +103,31 @@ public class CustomMecanumDrive {
         // power caching
         if (comparePower(prevFrontLeftPower, frontLeftPower) || comparePower(prevBackLeftPower, backLeftPower) ||
             comparePower(prevFrontRightPower, frontRightPower) || comparePower(prevBackRightPower, backRightPower)) {
-            // writing/assiging outputs
+            // writing/assigning outputs
+            Fl.setPower(frontLeftPower);
+            Bl.setPower(backLeftPower);
+            Fr.setPower(frontRightPower);
+            Br.setPower(backRightPower);
+        }
+        // assigns for next loop
+        prevFrontLeftPower = frontLeftPower;
+        prevBackLeftPower = backLeftPower;
+        prevFrontRightPower = frontRightPower;
+        prevBackRightPower = backRightPower;
+    }
+
+    public void driveRobotCentric(double x, double y, double rx) {
+        // calculating output
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double frontLeftPower = (y + x + rx) / denominator;
+        double backLeftPower = (y - x + rx) / denominator;
+        double frontRightPower = (y - x - rx) / denominator;
+        double backRightPower = (y + x - rx) / denominator;
+
+        // power caching
+        if (comparePower(prevFrontLeftPower, frontLeftPower) || comparePower(prevBackLeftPower, backLeftPower) ||
+                comparePower(prevFrontRightPower, frontRightPower) || comparePower(prevBackRightPower, backRightPower)) {
+            // writing/assigning outputs
             Fl.setPower(frontLeftPower);
             Bl.setPower(backLeftPower);
             Fr.setPower(frontRightPower);
@@ -115,7 +152,7 @@ public class CustomMecanumDrive {
         double derivative = (error - lastError) / timer.seconds();
 
         double output = Math.max(-1, Math.min(1, (Kp * error) + (Kd * derivative)));
-        // square root PID, if robot is heavy
+        // square root PID, if robot is too heavy to fix small error
         // double output = Math.signum(output) * Math.min(1, Math.sqrt(Math.abs(output)));
 
         // reset stuff for next time

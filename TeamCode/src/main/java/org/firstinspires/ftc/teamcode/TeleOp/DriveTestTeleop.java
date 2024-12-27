@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Subsystems.ArmTutorial;
@@ -16,12 +17,20 @@ public class DriveTestTeleop extends OpMode {
     private ElapsedTime elapsedtime;
     private List<LynxModule> allHubs;
 
+    final Gamepad currentGamepad1 = new Gamepad();
+    final Gamepad currentGamepad2 = new Gamepad();
+    final Gamepad previousGamepad1 = new Gamepad();
+    final Gamepad previousGamepad2 = new Gamepad();
+
     public void init() {
         drive.initialize(this);
-        elapsedtime = new ElapsedTime();
-        elapsedtime.reset();
-        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        // loop time stuff, not necessary
+//        elapsedtime = new ElapsedTime();
+//        elapsedtime.reset();
+
         // bulk caching
+        allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
@@ -32,17 +41,31 @@ public class DriveTestTeleop extends OpMode {
     }
 
     public void loop() {
-        // bulk caching, because I am making like 5 IMU reads per loop, and that will really kill auto caching loop times
+        // bulk caching, because I am making like 5 IMU reads per loop, and that will really kill loop times
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
+
+        // for rising edge detection
+        previousGamepad1.copy(currentGamepad1);
+        previousGamepad2.copy(currentGamepad2);
+
+        currentGamepad1.copy(gamepad1);
+        currentGamepad2.copy(gamepad2);
+
         // drive field-centric default
         // slowmode when hold right bumper
         // auto rotate to target
         drive.operateTesting(this);
 
+        if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
+            CustomMecanumDrive.SCALING_EXPONENT += 0.1;
+        } else if (currentGamepad1.left_bumper && !previousGamepad2.left_bumper) {
+            CustomMecanumDrive.SCALING_EXPONENT -= 0.1;
+        }
+
         // loop time measuring
-        telemetry.addData("Loop Times", elapsedtime.milliseconds());
-        elapsedtime.reset();
+//        telemetry.addData("Loop Times", elapsedtime.milliseconds());
+//        elapsedtime.reset();
     }
 }
