@@ -46,7 +46,7 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
     }
 
     public void operateTesting() {
-        odo.update(GoBildaPinpointDriver.readData.ONLY_UPDATE_HEADING);
+        odo.update();
 
         absoluteHeading = Math.toDegrees(odo.getHeading());
         normalizedHeading = normalize(absoluteHeading);

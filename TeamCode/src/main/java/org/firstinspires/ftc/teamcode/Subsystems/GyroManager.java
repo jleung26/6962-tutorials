@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class GyroManager {
-        public IMU imu;
+public IMU imu;
 
         double globalHeading;
         double relativeHeading;
@@ -24,8 +24,9 @@ public class GyroManager {
                 imu.initialize(
                         new IMU.Parameters(
                                 new RevHubOrientationOnRobot(
+                                        // TODO: hub directions
                                         RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                                        RevHubOrientationOnRobot.UsbFacingDirection.LEFT
                                 )
                         )
                 );
