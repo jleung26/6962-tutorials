@@ -57,10 +57,14 @@ public class CustomMecanumDrive {
         }
         // normal drive
         else {
-            driveRobotCentric(opmode.gamepad1.left_stick_x, -opmode.gamepad1.left_stick_y, opmode.gamepad1.right_stick_x);
+//            driveRobotCentric(opmode.gamepad1.left_stick_x, -opmode.gamepad1.left_stick_y, opmode.gamepad1.right_stick_x);
+            driveRobotCentric(Math.pow(opmode.gamepad1.left_stick_x, SCALING_EXPONENT), -Math.pow(opmode.gamepad1.left_stick_y, SCALING_EXPONENT), Math.pow(opmode.gamepad1.right_stick_x, SCALING_EXPONENT));
         }
 
+
         // for testing exponential drive vector scaling, uncomment when test
+        // WARNING: you can only use some exponents for this, otherwise they might be undefined or always positive
+        // I've found that ±0.4 starting at 1 keeps an odd function, which allows negative input and output
 //        // apply to all 3 inputs (I'm guessing this will be our driver's favorite)
 //        driveRobotCentric(Math.pow(opmode.gamepad1.left_stick_x, SCALING_EXPONENT), -Math.pow(opmode.gamepad1.left_stick_y, SCALING_EXPONENT), Math.pow(opmode.gamepad1.right_stick_x, SCALING_EXPONENT));
 //        // apply to forward back AND turn (not strafe)

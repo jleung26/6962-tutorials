@@ -33,6 +33,7 @@ public IMU imu;
 
         }
 
+        // returns [-180,180]
         public double getHeading()
         {
                 return getAbsoluteHeading() - offset;

@@ -54,14 +54,17 @@ public class DriveTestTeleop extends OpMode {
         currentGamepad2.copy(gamepad2);
 
         // drive field-centric default
-        // slowmode when hold right bumper
-        // auto rotate to target
+        // left trigger - slowmode
+        // right trigger - auto rotate to target
+        // B- reset
+        // A - set target
         drive.operateTesting(this);
 
+        // most simple, basic rising edge detection, no need for expressway or Pasteurized
         if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
-            CustomMecanumDrive.SCALING_EXPONENT += 0.1;
+            CustomMecanumDrive.SCALING_EXPONENT += 0.4;
         } else if (currentGamepad1.left_bumper && !previousGamepad2.left_bumper) {
-            CustomMecanumDrive.SCALING_EXPONENT -= 0.1;
+            CustomMecanumDrive.SCALING_EXPONENT -= 0.4;
         }
 
         // loop time measuring
