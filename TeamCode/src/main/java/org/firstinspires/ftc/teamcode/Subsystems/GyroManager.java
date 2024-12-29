@@ -36,14 +36,22 @@ public IMU imu;
         // returns [-180,180]
         public double getHeading()
         {
-                return getAbsoluteHeading() - offset;
+                return normalizeYaw(getAbsoluteHeading() - offset);
         }
 
+        // returns [-180,180]
         public double getAbsoluteHeading() {
                 return imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
         }
 
         public void relativeReset() {
                 offset += getHeading();
+        }
+
+        private double normalizeYaw(double yaw) {
+                // Normalize error to -180 to 180
+                while (yaw > 180) yaw -= 360;
+                while (yaw < -180) yaw += 360;
+                return yaw;
         }
 }
