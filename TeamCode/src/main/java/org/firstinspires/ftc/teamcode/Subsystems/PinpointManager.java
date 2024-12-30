@@ -50,7 +50,7 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
 
         absoluteHeading = Math.toDegrees(odo.getHeading());
         normalizedHeading = normalize(absoluteHeading);
-        relativeNormalizedHeading = normalizedHeading - offset;
+        relativeNormalizedHeading = normalize(normalizedHeading - offset);
 
         telemetry.addData("UNnormalized absolute heading (degrees)", absoluteHeading);
         telemetry.addData("normalized absolute heading (degrees)", normalizedHeading);
@@ -79,7 +79,7 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
         odo.update(GoBildaPinpointDriver.readData.ONLY_UPDATE_HEADING);
 
         normalizedHeading = normalize(Math.toDegrees(odo.getHeading()));
-        relativeNormalizedHeading = normalizedHeading - offset;
+        relativeNormalizedHeading = normalize(normalizedHeading - offset);
     }
 
     public void softResetYaw() {
@@ -87,17 +87,8 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
     }
 
     public double normalize(double angle) {
-        // Normalize the angle to the range [0, 360)
-        angle = angle % 360;
-        if (angle < 0) {
-            angle += 360;
-        }
-
-        // Shift to the range [-180, 180)
-        if (angle >= 180) {
-            angle -= 360;
-        }
-
+        while (angle > 180) angle -= 360;
+        while (angle < -180) angle += 360;
         return angle;
     }
 }
