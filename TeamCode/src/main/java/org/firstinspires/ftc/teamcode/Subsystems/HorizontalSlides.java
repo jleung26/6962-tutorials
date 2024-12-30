@@ -1,16 +1,18 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+@Config
 public class HorizontalSlides {
     private OpMode opmode;
     public DcMotorEx slideMotor;
     private PIDController controller;
 
     // TODO: tune
-    public static double MAPPING_EXPONENT = 0.5;
+    public static double MAPPING_EXPONENT = 0.4;
     public static double UPPER_LIMIT = 10;
     public static double LOWER_LIMIT = -2;
     public static double RETRACTED_THRESHOLD = 10;
