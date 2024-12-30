@@ -58,7 +58,7 @@ public class DriveTestTeleop extends OpMode {
         // right trigger - auto rotate to target
         // B- reset
         // A - set target
-        drive.operateTesting(this);
+        drive.operateTesting();
 
         // most simple, basic rising edge detection, no need for expressway or Pasteurized
         if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {

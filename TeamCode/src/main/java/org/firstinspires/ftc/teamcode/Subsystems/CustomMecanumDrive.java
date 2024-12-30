@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 public class CustomMecanumDrive {
+    private OpMode opmode;
     private DcMotorEx Fl, Fr, Bl, Br;
     private volatile double prevFrontLeftPower, prevBackLeftPower, prevFrontRightPower, prevBackRightPower;
     private GyroManager gyro = new GyroManager();
@@ -28,6 +29,7 @@ public class CustomMecanumDrive {
     public CustomMecanumDrive() {}
 
     public void initialize(OpMode opmode) {
+        this.opmode = opmode;
         this.Fl = opmode.hardwareMap.get(DcMotorEx.class, "");
         this.Fr = opmode.hardwareMap.get(DcMotorEx.class, "");
         this.Bl = opmode.hardwareMap.get(DcMotorEx.class, "");
@@ -44,7 +46,7 @@ public class CustomMecanumDrive {
         gyro.initialize(opmode);
     }
 
-    public void operateTesting(OpMode opmode) {
+    public void operateTesting() {
 
         // for testing PD auto orienting
         // auto rotate to angle with PID test
@@ -128,15 +130,20 @@ public class CustomMecanumDrive {
         double frontRightPower = (y - x - rx) / denominator;
         double backRightPower = (y + x - rx) / denominator;
 
-        // power caching
-        if (comparePower(prevFrontLeftPower, frontLeftPower) || comparePower(prevBackLeftPower, backLeftPower) ||
-                comparePower(prevFrontRightPower, frontRightPower) || comparePower(prevBackRightPower, backRightPower)) {
-            // writing/assigning outputs
+        // very un-wrappered power caching
+        if (comparePower(prevFrontLeftPower, frontLeftPower)) {
             Fl.setPower(frontLeftPower);
+        }
+        if (comparePower(prevBackLeftPower, backLeftPower)) {
             Bl.setPower(backLeftPower);
+        }
+        if (comparePower(prevFrontRightPower, frontRightPower)) {
             Fr.setPower(frontRightPower);
+        }
+        if (comparePower(prevBackRightPower, backRightPower)) {
             Br.setPower(backRightPower);
         }
+
         // assigns for next loop
         prevFrontLeftPower = frontLeftPower;
         prevBackLeftPower = backLeftPower;

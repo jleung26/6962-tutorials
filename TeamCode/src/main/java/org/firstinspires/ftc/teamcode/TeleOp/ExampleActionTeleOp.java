@@ -20,7 +20,6 @@ public class ExampleActionTeleOp extends OpMode {
     private MultipleTelemetry dashboardTelemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());
 
 
-    // optimizing stuff apparently?
     final Gamepad currentGamepad1 = new Gamepad();
     final Gamepad currentGamepad2 = new Gamepad();
     final Gamepad previousGamepad1 = new Gamepad();
