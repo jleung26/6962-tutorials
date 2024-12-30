@@ -52,10 +52,6 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
         normalizedHeading = normalize(absoluteHeading);
         relativeNormalizedHeading = normalizedHeading - offset;
 
-        if (opmode.gamepad1.a) {
-            offset += normalizedHeading;
-        }
-
         telemetry.addData("UNnormalized absolute heading (degrees)", absoluteHeading);
         telemetry.addData("normalized absolute heading (degrees)", normalizedHeading);
         telemetry.addData("normalized relative heading (degrees)", relativeNormalizedHeading);
@@ -86,7 +82,7 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
         relativeNormalizedHeading = normalizedHeading - offset;
     }
 
-    public void softReset() {
+    public void softResetYaw() {
         offset += normalizedHeading;
     }
 
