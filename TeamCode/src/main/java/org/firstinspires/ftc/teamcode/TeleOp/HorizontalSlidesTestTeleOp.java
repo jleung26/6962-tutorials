@@ -32,6 +32,8 @@ public class HorizontalSlidesTestTeleOp extends OpMode {
 
         currentGamepad1.copy(gamepad1);
         currentGamepad2.copy(gamepad2);
+        // rising edge toggle
+        // We use rising edge detection here, even though it's overkill, because of ultra fast loop times that make it impossible to control a toggle
         if (currentGamepad1.a && !previousGamepad1.a) {
             tuningPID = !tuningPID;
         }
@@ -42,6 +44,12 @@ public class HorizontalSlidesTestTeleOp extends OpMode {
         else {
             horizontalSlides.operateTuningPositions();
         }
+        // TODO: tuning
+        // 1. use gamepad 1 left joystick to find upper limit in ticks (according to 42 inch limit)
+        // 2. press gp1 A once and check telemetry for "PID tuning"
+        // 3. open dashboard and start graphing
+        // 4. continuously guess and check different Kp and Kd values using dashboard, using gp1 right trigger
+        // 5. if something goes horribly wrong with trigger control, press A to go back to joystick control
 
         dashboardTelemetry.addLine(String.format("Tuning Mode %s", tuningPID ? "PID tuning (trigger)" : "Position tuning (joystick)"));
         dashboardTelemetry.addData("Motor Encoder Pos: ", horizontalSlides.telemetryMotorPos());

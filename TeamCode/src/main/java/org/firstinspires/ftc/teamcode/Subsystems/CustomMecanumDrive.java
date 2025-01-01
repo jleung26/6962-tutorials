@@ -14,7 +14,7 @@ public class CustomMecanumDrive {
     private GyroManager gyro = new GyroManager();
 
     public static double SLOW_MODE_FACTOR = 0.5;
-    public static double CACHING_THRESHOLD = 0.005;
+    public static double CACHING_THRESHOLD = 0.01;
     public static double SCALING_EXPONENT = 1;
 
     public static double Kp = 0.01;
@@ -39,6 +39,10 @@ public class CustomMecanumDrive {
         Fr.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         Bl.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         Br.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//        Fl.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+//        Fr.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+//        Bl.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+//        Br.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
 
         Fl.setDirection(DcMotorSimple.Direction.REVERSE);
         Bl.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -132,28 +136,26 @@ public class CustomMecanumDrive {
 
         // very un-wrappered power caching
         if (comparePower(prevFrontLeftPower, frontLeftPower)) {
+            prevFrontLeftPower = frontLeftPower;
             Fl.setPower(frontLeftPower);
         }
         if (comparePower(prevBackLeftPower, backLeftPower)) {
+            prevBackLeftPower = backLeftPower;
             Bl.setPower(backLeftPower);
         }
         if (comparePower(prevFrontRightPower, frontRightPower)) {
+            prevFrontRightPower = frontRightPower;
             Fr.setPower(frontRightPower);
         }
         if (comparePower(prevBackRightPower, backRightPower)) {
+            prevBackRightPower = backRightPower;
             Br.setPower(backRightPower);
         }
-
-        // assigns for next loop
-        prevFrontLeftPower = frontLeftPower;
-        prevBackLeftPower = backLeftPower;
-        prevFrontRightPower = frontRightPower;
-        prevBackRightPower = backRightPower;
     }
 
     // checks if powers are different enough
     public boolean comparePower(double prevPower, double currentPower) {
-        return Math.abs(currentPower - prevPower) >= CACHING_THRESHOLD;
+        return (Math.abs(prevPower - currentPower) >= CACHING_THRESHOLD) || (currentPower == 0 && prevPower != 0);
     }
 
     public double PDTurning(double targetHeading, double currentHeading) {

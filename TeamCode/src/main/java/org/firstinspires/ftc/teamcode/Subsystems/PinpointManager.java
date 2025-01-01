@@ -67,7 +67,7 @@ public class PinpointManager { // pinpoint for use during teleop, pedro has its 
         telemetry.addData("REV Hub Frequency (Hz): ", frequency); // control hub refresh rate
 
         Pose2D pos = odo.getPosition();
-        String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, Heading: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
+        String data = String.format(Locale.US, "{X: %.3f mm, Y: %.3f mm, Heading: %.3f°}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
         telemetry.addData("Position", data);
 
         Pose2D vel = odo.getVelocity();

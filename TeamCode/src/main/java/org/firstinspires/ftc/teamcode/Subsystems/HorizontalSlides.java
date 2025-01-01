@@ -18,7 +18,7 @@ public class HorizontalSlides {
     public static double RETRACTED_THRESHOLD = 10;
 
     // PID constants
-    public static double Kp = 0.0065;
+    public static double Kp = 0;
     public static double Ki = 0;
     public static double Kd = 0;
 
@@ -71,10 +71,6 @@ public class HorizontalSlides {
         target = mapTriggerToTarget(opmode.gamepad1.right_trigger);
         output = controller.calculate(currentPos, target);
         slideMotor.setPower(output);
-
-        // updates boolean
-        slidesRetracted = currentPos < RETRACTED_THRESHOLD;
-
     }
 
     public void operateTuningPositions() {
