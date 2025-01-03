@@ -76,7 +76,7 @@ public class ArmTutorial {
             armCurrentState = ArmStates.SCORING_BUCKET;
         }
 
-        public void toScoringClipt() {
+        public void toScoringClip() {
             armServo.setPosition(scoringClipPosition);
             armCurrentState = ArmStates.SCORING_CLIP;
         }
