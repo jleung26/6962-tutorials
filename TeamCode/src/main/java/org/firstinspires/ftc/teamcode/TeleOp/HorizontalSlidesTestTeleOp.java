@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.HorizontalSlides;
 
+@TeleOp
 public class HorizontalSlidesTestTeleOp extends OpMode {
     private FtcDashboard dash = FtcDashboard.getInstance();
     private Telemetry dashboardTelemetry = dash.getTelemetry();
