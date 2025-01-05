@@ -18,10 +18,17 @@ public class ExampleActionTeleOp extends OpMode {
     // Action stuff
     private FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
+
+    // bulk cache reading
     private List<LynxModule> allHubs;
+
+    // adds ability to graph telemetry values
     private MultipleTelemetry dashboardTelemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());
 
+    // loop time tracking
+    private ElapsedTime elapsedtime;
 
+    // rising and falling edge detection
     final Gamepad currentGamepad1 = new Gamepad();
     final Gamepad currentGamepad2 = new Gamepad();
     final Gamepad previousGamepad1 = new Gamepad();
@@ -29,6 +36,7 @@ public class ExampleActionTeleOp extends OpMode {
 
     @Override
     public void init() {
+        // bulk cache reading
         allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) { hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL); }
     }
