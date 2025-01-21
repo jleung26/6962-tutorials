@@ -40,7 +40,7 @@ public class IntakeTestTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        // clearing bulk cache so we don't have egregious loop times from all the i2c calls I'm making
+        // bulk caching so we don't have egregious loop times from all the i2c calls I'm making
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
@@ -49,17 +49,23 @@ public class IntakeTestTeleOp extends OpMode {
 
         currentGamepad1.copy(gamepad1);
         currentGamepad2.copy(gamepad2);
-        // do this first
+        // to test geometry if successfully passed drill test
         // left_stick_y - manual intake motor control
-        // right & left trigger - wrist incremental
-
-        // next
-        // stick stuff into chamber for color
-        // tune detection threshold
-
-        // write down, push, test
+        // OR
         // A intake, B neutral, Y reverse
-        // dpad up and down- flip wrist up and down
+
+        // Jayden's tuning, he will guide you
+        // 1. put in neutral (B)
+        // 2. stick stuff into chamber
+        // 3. read telemetry
+        // 4. write down values and stuff
+        // 5. push onto bot
+
+        // Final testing
+        // 1. press right bumper to toggle into automated mode
+        //    (automated mode should auto reject when wrong and auto stop when correct)
+        // 2. toggle X to change which alliance color to reject
+        // 3. suck up the whole submersible
 
         // boolean toggle
         if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {

@@ -50,6 +50,7 @@ public class Intake {
 
     // sensor constants
     public static double DETECTION_THRESHOLD = 0.75; // inches
+    public static double RGB_THRESHOLD = 500;
 
     public void initialize(OpMode opmode) {
         this.opmode = opmode;
@@ -112,7 +113,7 @@ public class Intake {
                 reverse();
             }
         // if chamber full and correct color, set to neutral
-        } else if (intakeState != IntakeState.NEUTRAL){
+        } else if (chamberState != IntakeChamberState.EMPTY && intakeState != IntakeState.NEUTRAL){
             neutral();
         }
 
@@ -143,22 +144,22 @@ public class Intake {
     public IntakeChamberState getPieceColor() {
         if (colorSensor.getDistance(DistanceUnit.INCH) < DETECTION_THRESHOLD) {
             double blue = colorSensor.blue();
-//            double red = colorSensor.red();
+            double red = colorSensor.red();
             double green = colorSensor.green();
 
             // Minimal comparisons, breaks if the reflected light is too saturated and nearly white
-            if (blue > 180) {
+            if (blue > RGB_THRESHOLD) {
                 return IntakeChamberState.BLUE; // Blue is dominant -> blue
-            } else if (green > 180) {
+            } else if (green > RGB_THRESHOLD) {
                 return IntakeChamberState.YELLOW; // Green dominant, blue not dominant -> (Yellow)
             } else {
                 return IntakeChamberState.RED; // Not blue or yellow -> red
             }
-            // safer code, but more comparisons and less optimal, if keeps returning RED above, try this instead
+            // safer code, but more comparisons and less optimal, if continually wrong above, try this instead
             // if (blue > red && blue > green) {
             //        chamberColor = IntakeChamberState.BLUE; // Blue dominates
             //    } else if (red > blue && green > blue) {
-            //        chamberColor = IntakeChamberState.YELLOW; // Red and green dominate = Yellow
+            //        chamberColor = IntakeChamberState.YELLOW; // Red and Green dominate = Yellow
             //    } else if (red > blue && red > green) {
             //        chamberColor = IntakeChamberState.RED; // Red dominates
             //    } else {
