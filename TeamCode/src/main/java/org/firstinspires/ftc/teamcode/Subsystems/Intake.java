@@ -5,7 +5,6 @@ import android.graphics.Color;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -18,7 +17,7 @@ public class Intake {
     OpMode opmode;
     public DcMotorEx intakeMotor;
     public Servo wrist;
-    public ColorRangeSensor colorSensor;
+    public RevColorSensorV3 colorSensor;
 
     public enum IntakeChamberState {
         BLUE,
@@ -37,7 +36,6 @@ public class Intake {
     public volatile IntakeChamberState chamberState = IntakeChamberState.EMPTY;
     public volatile IntakeState intakeState = IntakeState.NEUTRAL;
 
-
     // motor constants
     private double INTAKING_POWER = 1;
     private double REVERSE_POWER = -1;
@@ -49,14 +47,15 @@ public class Intake {
     private double WRIST_TUNING_INCREMENT = 0.001;
 
     // sensor constants
-    public static double DETECTION_THRESHOLD = 0.75; // inches
-    public static double RGB_THRESHOLD = 500;
+    public static double DETECTION_THRESHOLD = 1.2; // inches
+    public static double BLUE_RGB_THRESHOLD = 420;
+    public static double YELLOW_RGB_THRESHOLD = 500;
 
     public void initialize(OpMode opmode) {
         this.opmode = opmode;
-        intakeMotor = opmode.hardwareMap.get(DcMotorEx.class, "");
-        wrist = opmode.hardwareMap.get(Servo.class, "");
-        colorSensor = opmode.hardwareMap.get(RevColorSensorV3.class, "");
+        intakeMotor = opmode.hardwareMap.get(DcMotorEx.class, "motor");
+        wrist = opmode.hardwareMap.get(Servo.class, "wrist");
+        colorSensor = opmode.hardwareMap.get(RevColorSensorV3.class, "colorsensor");
 
         colorSensor.enableLed(true);
 
@@ -93,7 +92,6 @@ public class Intake {
         opmode.telemetry.addLine(String.format(Locale.US, "Red %d, Green %d, Blue %d, Opacity %d", colorSensor.red(), colorSensor.green(), colorSensor.blue(), colorSensor.alpha()));
         float[] hsvValues = new float[3];
         Color.RGBToHSV(colorSensor.red(), colorSensor.green(), colorSensor.blue(), hsvValues);
-        opmode.telemetry.addLine(String.format(Locale.US, "Hue %f, Saturation %f, Brightness %f, getColorViaHSV() returns %s", hsvValues[0], hsvValues[1], hsvValues[2], getColorViaHSV()));
         opmode.telemetry.addData("distance detected", colorSensor.getDistance(DistanceUnit.INCH));
         opmode.telemetry.addData("chamber color enum: ", chamberState);
         opmode.telemetry.addData("intake state enum: ", intakeState);
@@ -107,14 +105,13 @@ public class Intake {
         // if empty, start intaking (only once instead of once every loop)
         if (chamberState == IntakeChamberState.EMPTY && intakeState != IntakeState.INTAKING) {
             intake();
-        // if chamber full, check color and reverse once, and another statement will eventually set back to intaking
+            // if chamber full, check color and reverse once, and another statement will eventually set back to intaking
         } else if (chamberState != IntakeChamberState.EMPTY) {
             if (chamberState == (rejectBlue ? IntakeChamberState.BLUE : IntakeChamberState.RED) && intakeState != IntakeState.REVERSE) {
                 reverse();
+            } else if ((chamberState == (rejectBlue ? IntakeChamberState.RED : IntakeChamberState.BLUE) || chamberState == IntakeChamberState.YELLOW) && intakeState != IntakeState.NEUTRAL) {
+                neutral();
             }
-        // if chamber full and correct color, set to neutral
-        } else if (chamberState != IntakeChamberState.EMPTY && intakeState != IntakeState.NEUTRAL){
-            neutral();
         }
 
         opmode.telemetry.addData("chamber color enum: ", chamberState);
@@ -144,42 +141,39 @@ public class Intake {
     public IntakeChamberState getPieceColor() {
         if (colorSensor.getDistance(DistanceUnit.INCH) < DETECTION_THRESHOLD) {
             double blue = colorSensor.blue();
-            double red = colorSensor.red();
+//            double red = colorSensor.red();
             double green = colorSensor.green();
 
             // Minimal comparisons, breaks if the reflected light is too saturated and nearly white
-            if (blue > RGB_THRESHOLD) {
+            if (blue > BLUE_RGB_THRESHOLD) {
                 return IntakeChamberState.BLUE; // Blue is dominant -> blue
-            } else if (green > RGB_THRESHOLD) {
+            } else if (green > YELLOW_RGB_THRESHOLD) {
                 return IntakeChamberState.YELLOW; // Green dominant, blue not dominant -> (Yellow)
             } else {
                 return IntakeChamberState.RED; // Not blue or yellow -> red
             }
-            // safer code, but more comparisons and less optimal, if continually wrong above, try this instead
-            // if (blue > red && blue > green) {
-            //        chamberColor = IntakeChamberState.BLUE; // Blue dominates
-            //    } else if (red > blue && green > blue) {
-            //        chamberColor = IntakeChamberState.YELLOW; // Red and Green dominate = Yellow
-            //    } else if (red > blue && red > green) {
-            //        chamberColor = IntakeChamberState.RED; // Red dominates
-            //    } else {
-            //        chamberColor = IntakeChamberState.UNKNOWN; // This case shouldn't happen if inputs are guaranteed
-            //    }
         } else {
             return IntakeChamberState.EMPTY;
         }
     }
-    public IntakeChamberState getColorViaHSV() {
-        // this might work... or it might not. This is the last resort if both above RBG comparisons don't work
-        float[] hsvValues = new float[3];
-        Color.RGBToHSV(colorSensor.red(), colorSensor.green(), colorSensor.blue(), hsvValues);
-        float hue = hsvValues[0];
-        if (hue >= 190 && hue < 260) {
-            return IntakeChamberState.BLUE;
-        } else if (hue >= 40 && hue < 70) {
-            return IntakeChamberState.YELLOW;
-        } else {
-            return IntakeChamberState.RED;
-        }
-    }
+//    public IntakeChamberState getColorViaHSV() {
+//        // this might work... or it might not. This is the last resort if both above RBG comparisons don't work
+//        if (colorSensor.getDistance(DistanceUnit.INCH) < DETECTION_THRESHOLD) {
+//            // this might work... or it might not. This is the last resort if both above RBG comparisons don't work
+//            float[] hsvValues = new float[3];
+//            Color.RGBToHSV(colorSensor.red(), colorSensor.green(), colorSensor.blue(), hsvValues);
+//            float hue = hsvValues[0];
+//            if (hue >= 190 && hue < 260) {
+//                return IntakeChamberState.BLUE;
+//            } else if (hue >= 30 && hue < 90) {
+//                return IntakeChamberState.YELLOW;
+//            } else if (hue < 30 || hue > 260) {
+//                return IntakeChamberState.RED;
+//            } else {
+//                return IntakeChamberState.UNKNOWN;
+//            }
+//        } else {
+//            return IntakeChamberState.EMPTY;
+//        }
+//    }
 }
