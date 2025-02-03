@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class VerticalSlides {
     OpMode opmode;
 
-//    private final RobotHardware rHardware = new RobotHardware();
+    //    private final RobotHardware rHardware = new RobotHardware();
     private PIDController controller;
     private DcMotorEx leftSlideMotor, rightSlideMotor;
 
@@ -36,10 +36,11 @@ public class VerticalSlides {
     private volatile double output = 0;
     private volatile double previousOutput = 0;
     public volatile boolean slidesRetracted = true;
+    public volatile boolean usePID = true;
 
     public VerticalSlides() {}
 
-    public void teleInitialize(OpMode opmode) {
+    public void initialize(OpMode opmode, boolean resetEncoders) {
         this.opmode = opmode;
 
         leftSlideMotor = opmode.hardwareMap.get(DcMotorEx.class, "");
@@ -55,33 +56,18 @@ public class VerticalSlides {
 
         leftSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         rightSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+
+        if (resetEncoders) {
+            leftSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            rightSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        }
     }
 
-    public void autoInitialize(OpMode opmode) {
-        this.opmode = opmode;
-
-        leftSlideMotor = opmode.hardwareMap.get(DcMotorEx.class, "");
-        rightSlideMotor = opmode.hardwareMap.get(DcMotorEx.class, "");
-
-        controller = new PIDController(Kp, Ki, Kd);
-        leftSlideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightSlideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-//        leftSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightSlideMotor.setDirection(DcMotorEx.Direction.REVERSE);
-
-        leftSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rightSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-
-        leftSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        rightSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-    }
-
-    public void operateTeleOp() {
+    public void operate() {
         int currentPos = rightSlideMotor.getCurrentPosition();
-        slidesRetracted = currentPos < RETRACTED_THRESHOLD;
+//        slidesRetracted = currentPos < RETRACTED_THRESHOLD;
         output = controller.calculate(currentPos, target) + (slidesRetracted ? 0: Kg);
-        output = (Math.abs(output) > 1 ? (output > 0 ? 1 : -1) : output);
+        output = Math.max(-1, Math.min(1, output));
 
         // includes power caching
         if (isDifferent(output, previousOutput)) {
@@ -101,23 +87,24 @@ public class VerticalSlides {
         int currentPos = rightSlideMotor.getCurrentPosition();
 
         slidePower = -opmode.gamepad2.left_stick_y;
-        if (Math.abs(slidePower) > 0.05) {
+        usePID = Math.abs(slidePower) < 0.05;
+        if (usePID) {
+            // use PID
+            output = controller.calculate(currentPos, target) + Kg;
+            leftSlideMotor.setPower(output);
+            rightSlideMotor.setPower(output);
+        } else {
             // move freely
             leftSlideMotor.setPower(slidePower);
             rightSlideMotor.setPower(slidePower);
             target = currentPos;
+        }
 
-            // if out of range, sets target to back in range
-            if (currentPos > UPPER_LIMIT) {
-                target = UPPER_LIMIT;
-            } else if (currentPos < LOWER_LIMIT) {
-                target = LOWER_LIMIT;
-            }
-        } else {
-            // else use PID
-            output = controller.calculate(currentPos, target) + Kg;
-            leftSlideMotor.setPower(output);
-            rightSlideMotor.setPower(output);
+        // if out of range, sets target to back in range
+        if (currentPos > UPPER_LIMIT) {
+            target = UPPER_LIMIT;
+        } else if (currentPos < LOWER_LIMIT) {
+            target = LOWER_LIMIT;
         }
 
         // updates boolean
@@ -127,12 +114,8 @@ public class VerticalSlides {
     public void operateFix() {
         // manual control
         slidePower = -opmode.gamepad2.left_stick_y;
-
-        if (Math.abs(slidePower) > 0.05)
-        {
-            leftSlideMotor.setPower(slidePower);
-            rightSlideMotor.setPower(slidePower);
-        }
+        leftSlideMotor.setPower(slidePower);
+        rightSlideMotor.setPower(slidePower);
 
         if (opmode.gamepad2.left_stick_button) {
             leftSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
