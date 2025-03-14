@@ -121,7 +121,6 @@ public class VerticalSlides {
             leftSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             rightSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         }
-
     }
 
     public void moveToPosition(int targetPos) {target = targetPos;}
